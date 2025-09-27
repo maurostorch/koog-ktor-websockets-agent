@@ -1,4 +1,4 @@
-# ktor-sample
+# koog-ktor-websockets-agent
 
 This project was created using the [Ktor Project Generator](https://start.ktor.io).
 
@@ -40,3 +40,33 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
 ```
 
+## Client (React App)
+
+This project includes a React frontend located in the `/client` folder. It communicates with the Ktor backend via WebSockets.
+
+### Setup & Run
+1. Install dependencies:
+   ```sh
+   cd client
+   npm install
+   ```
+2. Start the development server:
+   ```sh
+   npm run dev
+   ```
+   The app will be available at [http://localhost:5173](http://localhost:5173) by default.
+
+## Ollama Integration
+
+Ollama is an open-source tool for running LLMs locally. To use it with this project:
+
+### Install Ollama
+- Visit [Ollama's website](https://ollama.com/download) and follow the instructions for your OS.
+
+### Run Ollama in Serve Mode
+1. Start Ollama in serve mode:
+   ```sh
+   ollama serve
+   ```
+   This will start the Ollama server, making models available for local inference.
+2. You can now interact with Ollama from your backend or other tools.

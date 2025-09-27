@@ -1,4 +1,4 @@
-rootProject.name = "ktor-sample"
+rootProject.name = "koog-ktor-sockets"
 
 dependencyResolutionManagement {
     repositories {
