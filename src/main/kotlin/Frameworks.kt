@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 
 val ollamaModel = LLModel(
     provider = LLMProvider.Ollama,
-    id = "gemma3:4b",
+    id = "llama3.2:3b",//"gemma3:4b",
     capabilities = listOf(
         LLMCapability.Temperature,
         LLMCapability.Schema.JSON.Basic
@@ -51,10 +51,13 @@ fun Application.configureFrameworks() {
     }
     routing {
         webSocket("/agent/base") {
+            val history = mutableListOf<String>()
             for (frame in incoming) {
                 println("Received frame: $frame")
                 if (frame is Frame.Text) {
+                    val chatHistory = history.joinToString("\n")
                     val message = frame.readText()
+                    history.add(message)
                     AIAgent(
                         executor = SingleLLMPromptExecutor(OllamaClient()),
                         llmModel = ollamaModel,
@@ -63,11 +66,17 @@ fun Application.configureFrameworks() {
                         You will be provided a question and you will answer it as best as possible. 
                         If you don't know the answer, just say that you don't know. 
                         Do not try to make up an answer.
+                        
+                        Consider the following chat history for context when answering:
+                        $chatHistory
                     """.trimIndent(),
                         strategy = singleRunStrategy()
                     ) {
                         eventHandler { feedback ->
-                            feedback.message?.let { outgoing.send(Frame.Text(it)) }
+                            feedback.message?.let {
+                                history.add(it)
+                                outgoing.send(Frame.Text(it))
+                            }
                             feedback.state.takeIf { s -> s == State.COMPLETED }?.let {
                                 outgoing.send(Frame.Text("__END__"))
 //                                close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
@@ -76,6 +85,7 @@ fun Application.configureFrameworks() {
                     }.run(message.trim())
                 }
             }
+
 
         }
         route("/ai") {
@@ -120,4 +130,5 @@ fun AIAgent.FeatureContext.eventHandler(handler: suspend (Feedback) -> Unit) {
 enum class State {
     INITIAL, PROCESSING, COMPLETED, ERROR
 }
+
 data class Feedback(val state: State, val message: String?)
