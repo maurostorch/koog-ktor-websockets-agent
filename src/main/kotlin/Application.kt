@@ -7,7 +7,5 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    configureSockets()
     configureFrameworks()
-    configureRouting()
 }
