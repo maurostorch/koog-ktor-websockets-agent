@@ -56,6 +56,8 @@ This project includes a React frontend located in the `/client` folder. It commu
    ```
    The app will be available at [http://localhost:5173](http://localhost:5173) by default.
 
+![image](chat.png)
+
 ## Ollama Integration
 
 Ollama is an open-source tool for running LLMs locally. To use it with this project:

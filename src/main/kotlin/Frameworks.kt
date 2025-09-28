@@ -1,7 +1,11 @@
 package com.example
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.asTool
 import ai.koog.agents.core.agent.singleRunStrategy
+import ai.koog.agents.core.tools.ToolParameterDescriptor
+import ai.koog.agents.core.tools.ToolParameterType
+import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.features.eventHandler.feature.EventHandler
 import ai.koog.ktor.Koog
 import ai.koog.ktor.aiAgent
@@ -11,6 +15,7 @@ import ai.koog.prompt.executor.ollama.client.OllamaClient
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
+import com.example.agents.calculatorAgent
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
@@ -70,6 +75,18 @@ fun Application.configureFrameworks() {
                         Consider the following chat history for context when answering:
                         $chatHistory
                     """.trimIndent(),
+                        toolRegistry = ToolRegistry {
+                            tool(
+                                calculatorAgent().asTool(
+                                    "calculator", "Useful for when you need to answer questions about math",
+                                    ToolParameterDescriptor(
+                                        "input",
+                                        "The input math equation of calculation to be answered",
+                                        ToolParameterType.String
+                                    )
+                                )
+                            )
+                        },
                         strategy = singleRunStrategy()
                     ) {
                         eventHandler { feedback ->
@@ -88,6 +105,7 @@ fun Application.configureFrameworks() {
 
 
         }
+        get { call.respondText("Hello World!") }
         route("/ai") {
             post("/chat") {
                 val userInput = call.receive<String>()
@@ -108,6 +126,10 @@ fun Application.configureFrameworks() {
 
 fun AIAgent.FeatureContext.eventHandler(handler: suspend (Feedback) -> Unit) {
     install(EventHandler) {
+        onToolCall { feedback ->
+            println("Tool called: ${feedback.tool.name}, args=${feedback.toolArgs}")
+            handler(Feedback(State.PROCESSING, "Calling tool: ${feedback.tool.name}"))
+        }
         onBeforeLLMCall {
             // list of random messages to indicate processing
             val processingMessages = listOf(

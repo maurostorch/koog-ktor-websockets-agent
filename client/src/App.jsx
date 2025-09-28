@@ -37,7 +37,7 @@ export default function App() {
 
     useEffect(() => {
         const placeholder = getPlaceholderFromPath();
-        const wsUrl = `${WS_BASE_URL}/${placeholder}`;
+        const wsUrl = `${WS_BASE_URL}/base`;
         if (wsRef.current) {
             wsRef.current.close();
         }
